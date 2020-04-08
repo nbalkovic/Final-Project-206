@@ -18,6 +18,14 @@ def get_state_populations():
     population_list = json.loads(population_data.text)
     return (population_list)
 
+def count_state_cases():
+    request_url = 'https://covidtracking.com/api/v1/states/current.json'
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15'}
+    virus_data = requests.get(request_url, headers = headers)
+    ordered_cases = []
+    for state in virus_data:
+        ordered_cases.append(state)
+    return sorted(ordered_cases, key = lambda x: x[1], reverse=True)
 
 conn = sqlite3.connect('final.sqlite')
 cur = conn.cursor()
