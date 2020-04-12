@@ -5,6 +5,8 @@ import requests
 import sqlite3
 import os
 import numpy as np 
+from bs4 import BeautifulSoup
+import bs4
 #GET DATA
 
 def get_state_virus_data():
@@ -31,7 +33,15 @@ def get_negative_results():
     #store 100 items from an API into a table, one table for each API
 
 def get_social_data():
-    pass
+    url = ('https://gs.statcounter.com/social-media-stats/all/united-states-of-america/#daily-20200101-20200409')
+    titles = {'user-agent':'This is user agent'}
+    x = requests.get(url, headers = titles)
+    soup = bs4.BeautifulSoup(x.text, features='lxml')
+    
+    all_urls = soup
+    new_urls = all_urls.find(class_ = 'raphael-group-11-hot')
+    print(new_urls)
+
 
 
 #calculates number of cases per state population (cases per capita)
@@ -49,7 +59,7 @@ def get_social_data():
 conn = sqlite3.connect('finalproject.sqlite')
 cur = conn.cursor()
 
-cur.execute('CREATE TABLE IF NOT EXISTS POPULATIONS (name TEXT, population INTEGER)')
+cur.execute('CREATE TABLE IF NOT EXISTS POPULATIONS (state TEXT, population INTEGER)')
 state_pop = get_state_populations()
 state_pop_cache = state_pop['data']
 
@@ -57,20 +67,32 @@ def population_table(start_pos, end_pos):
     for x in range(start_pos, end_pos):
         if (x <= 52):
             row = state_pop_cache[x]
-            _name = row['State']
-            _population = row['Population']
-            cur.execute('INSERT INTO POPULATIONS (name, population) VALUES (?, ?)',(_name, _population))
+            state_name = row['State']
+            state_population = row['Population']
+            cur.execute('INSERT INTO POPULATIONS (state, population) VALUES (?, ?)',(state_name, state_population))
             conn.commit()
         else:
             continue
     start_pos = end_pos
-    end_pos += 13
+    end_pos +=51
     return start_pos, end_pos
 
+cur.execute('CREATE TABLE IF NOT EXISTS TOTAL_VIRUSES (state TEXT, total INTEGER)')
+virus_total = get_state_virus_data()
+virus_total_cache = virus_total['data2']
 
 
 def total_virus_table(start_pos,end_pos):
-    pass
+    for x in range(start_pos, end_pos):
+        if(x<=52):
+            row = virus_total_cache[x]
+            state_name = row['State']
+            state_name = row['Virus']
+            cur.execute('INSERT INTO TOTAL_VIRUSES (state, total) VALUES (?, ?)',(state_name, state_name))
+            conn.commit()
+        else:
+            continue
+
     #insert into state and total virus count 
 
 def pos_neg_table(start_pos, end_pos):
@@ -91,7 +113,7 @@ def insert_twenty():
 
 def commit():
     conn.commit()
-    
+
 def main():
     commit()
 
