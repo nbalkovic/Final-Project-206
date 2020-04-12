@@ -12,6 +12,7 @@ def get_state_virus_data():
     request_data = requests.get(request_url_virus)
     virus_data = json.loads(request_data.text)
     return virus_data
+    #not working
 
 
 def get_state_populations():
@@ -21,28 +22,16 @@ def get_state_populations():
     population_list = json.loads(population_data.text)
     return(population_list)
 
-def create_table():
+def get_positive_results():
+    pass
+
+
+def get_negative_results():
     pass
     #store 100 items from an API into a table, one table for each API
 
-#PROCESS DATA
-
-def count_state_cases():
-    request_url = 'https://covidtracking.com/api/v1/states/current.json'
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15'}
-    virus_data = requests.get(request_url, headers = headers)
-    ordered_cases = []
-    for state in virus_data:
-        ordered_cases.append(state)
-    print(ordered_cases)
-    return sorted(ordered_cases, key = lambda x: x[1], reverse=True)
-
-def get_twitter_data():
+def get_social_data():
     pass
-
-def cases_per_pop():
-    pass
-
 
 
 #calculates number of cases per state population (cases per capita)
@@ -57,14 +46,14 @@ def cases_per_pop():
 #Explain what each function did, run through each briefly
 #State resources used
 
-conn = sqlite3.connect('final.sqlite')
+conn = sqlite3.connect('finalproject.sqlite')
 cur = conn.cursor()
 
 cur.execute('CREATE TABLE IF NOT EXISTS POPULATIONS (name TEXT, population INTEGER)')
 state_pop = get_state_populations()
 state_pop_cache = state_pop['data']
 
-def insert_states(start_pos, end_pos):
+def population_table(start_pos, end_pos):
     for x in range(start_pos, end_pos):
         if (x <= 52):
             row = state_pop_cache[x]
@@ -80,10 +69,31 @@ def insert_states(start_pos, end_pos):
 
 
 
-def call():
+def total_virus_table(start_pos,end_pos):
+    pass
+    #insert into state and total virus count 
+
+def pos_neg_table(start_pos, end_pos):
+    pass
+    #insert into table state(pos/neg) and according count
+
+def social_table(start_pos, end_pos):
+    pass
+    #insert into table 100 days and frequency of twitter use 
+
+def insert_twenty():
     start_pos = 0
     end_pos = 13
-    for i in range(4):
-        insert_states(start_pos,end_pos)
+    for i in range(20):
+        population_table(start_pos,end_pos)
         start_pos+= 13
         end_pos+= 13
+
+def commit():
+    conn.commit()
+    
+def main():
+    commit()
+
+if __name__ == "__main__":
+    main()
