@@ -4,6 +4,7 @@ import json
 import requests
 import sqlite3
 import os
+import tweepy as tw
 
 def get_state_virus_data():
     request_url = 'https://covidtracking.com/api/v1/states/current.json'
@@ -26,6 +27,23 @@ def count_state_cases():
     for state in virus_data:
         ordered_cases.append(state)
     return sorted(ordered_cases, key = lambda x: x[1], reverse=True)
+
+def get_twitter_data():
+    request_url = 'https://api.twitter.com/1.1/search/tweets.json?q=%23superbowl&result_type=recent'
+    r = api.requests('statuses/filter', {'track': '#covid19'})
+    
+    for item in r:
+        count +=1
+    
+    return count
+
+   url = self.base_url + f'/odata/Jobs({job_id})/UiPath.Server.Configuration.OData.StopJob'
+        headers = {'content-type': 'application/json', 'Authorization': 'Bearer ' + self.token}
+        payload = str({
+                        "strategy": "Kill"
+                      })
+        r = requests.post(url, data=payload, headers=headers)
+
 
 conn = sqlite3.connect('final.sqlite')
 cur = conn.cursor()
