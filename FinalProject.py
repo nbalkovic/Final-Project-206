@@ -101,8 +101,11 @@ def pos_neg_table(start_pos, end_pos):
             row = state_pop_cache[x]
             state_name = row['State']
             #IDK what to put virus_result = row['Virus']["Positive"]
-            cur.execute('INSERT INTO TOTAL_VIRUSES (state, total) VALUES (?, ?)',(state_name, virus_result))
-            conn.commit()
+            row2 = virus_pop_cache[x]
+            state_name2 = row['State']
+            #virus_result2 = row["Virus"]["Result"]
+            #cur.execute('INSERT INTO TOTAL_VIRUSES (state, total) VALUES (?, ?)',(state_name, virus_result))
+            #conn.commit()
         else:
             continue
     #tried starting these
