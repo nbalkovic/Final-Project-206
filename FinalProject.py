@@ -7,6 +7,8 @@ import os
 import numpy as np 
 from bs4 import BeautifulSoup
 import bs4
+import tweepy as tw
+
 #GET DATA
 
 def get_state_virus_data():
@@ -24,14 +26,6 @@ def get_state_populations():
     population_list = json.loads(population_data.text)
     return(population_list)
 
-def get_positive_results():
-    pass
-
-
-def get_negative_results():
-    pass
-    #store 100 items from an API into a table, one table for each API
-
 def get_social_data():
     url = ('https://gs.statcounter.com/social-media-stats/all/united-states-of-america/#daily-20200101-20200409')
     titles = {'user-agent':'This is user agent'}
@@ -41,6 +35,7 @@ def get_social_data():
     all_urls = soup
     new_urls = all_urls.find(class_ = 'raphael-group-11-hot')
     print(new_urls)
+
 
 
 
@@ -86,9 +81,9 @@ def total_virus_table(start_pos,end_pos):
     for x in range(start_pos, end_pos):
         if(x<=52):
             row = virus_total_cache[x]
-            state_name = row['State']
-            state_name = row['Virus']
-            cur.execute('INSERT INTO TOTAL_VIRUSES (state, total) VALUES (?, ?)',(state_name, state_name))
+            state_name = row['state']
+            state_total = row['total']
+            cur.execute('INSERT INTO TOTAL_VIRUSES (state, total) VALUES (?, ?)',(state_name, state_total))
             conn.commit()
         else:
             continue
@@ -106,7 +101,7 @@ def social_table(start_pos, end_pos):
 def insert_twenty():
     start_pos = 0
     end_pos = 13
-    for i in range(20):
+    for i in range(5):
         population_table(start_pos,end_pos)
         start_pos+= 13
         end_pos+= 13
