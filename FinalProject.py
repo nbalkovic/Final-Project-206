@@ -7,13 +7,12 @@ import os
 import numpy as np 
 from bs4 import BeautifulSoup
 import bs4
-import tweepy as tw
 
 #GET DATA
 
 def get_state_virus_data():
     request_url_virus = 'https://covidtracking.com/api/v1/states/current.json'
-    request_data = requests.get(request_url_virus, headers = headers)
+    request_data = requests.get(request_url_virus)
     virus_data = json.loads(request_data.text)
     return virus_data
     #not working
@@ -36,7 +35,17 @@ def get_social_data():
     new_urls = all_urls.find(class_ = 'raphael-group-11-hot')
     print(new_urls)
 
+def get_world_info():
+    url = ('https://www.worldometers.info/coronavirus/#countries')
+    titles = {'user-agent':'This is user agent'}
+    x = requests.get(url, headers = titles)
+    soup = bs4.BeautifulSoup(x.text, features='lxml')
+    
+    all_urls = soup
+    new_urls = all_urls.findAll(class_ = 'sorting')
+    return new_urls
 
+print(get_world_info)
 
 
 #calculates number of cases per state population (cases per capita)
@@ -74,13 +83,13 @@ def population_table(start_pos, end_pos):
 
 cur.execute('CREATE TABLE IF NOT EXISTS TOTAL_VIRUSES (state TEXT, total INTEGER)')
 virus_total = get_state_virus_data()
-virus_total_cache = virus_total['data2']
+#virus_total_cache = virus_total['data2']
 
 
 def total_virus_table(start_pos,end_pos):
     for x in range(start_pos, end_pos):
         if(x<=52):
-            row = virus_total_cache[x]
+            #row = virus_total_cache[x]
             state_name = row['state']
             state_total = row['total']
             cur.execute('INSERT INTO TOTAL_VIRUSES (state, total) VALUES (?, ?)',(state_name, state_total))
@@ -90,21 +99,21 @@ def total_virus_table(start_pos,end_pos):
 
     #insert into state and total virus count 
 
-def pos_neg_table(start_pos, end_pos):
-    for x in range(start_pos, end_pos):
-        if (x <= 52):
-            row = state_pop_cache[x]
-            state_name = row['State']
-            #IDK what to put virus_result = row['Virus']["Positive"]
-            row2 = virus_pop_cache[x]
-            state_name2 = row['State']
-            #virus_result2 = row["Virus"]["Result"]
-            #cur.execute('INSERT INTO TOTAL_VIRUSES (state, total) VALUES (?, ?)',(state_name, virus_result))
-            #conn.commit()
-        else:
-            continue
-    #tried starting these
-    #insert into table state(pos/neg) and according count
+# def pos_neg_table(start_pos, end_pos):
+#     for x in range(start_pos, end_pos):
+#         if (x <= 52):
+#             row = state_pop_cache[x]
+#             state_name = row['State']
+#             #IDK what to put virus_result = row['Virus']["Positive"]
+#             row2 = virus_pop_cache[x]
+#             state_name2 = row['State']
+#             #virus_result2 = row["Virus"]["Result"]
+#             #cur.execute('INSERT INTO TOTAL_VIRUSES (state, total) VALUES (?, ?)',(state_name, virus_result))
+#             #conn.commit()
+#         else:
+#             continue
+#     #tried starting these
+#     #insert into table state(pos/neg) and according count
 
 def social_table(start_pos, end_pos):
     pass
