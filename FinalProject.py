@@ -11,7 +11,7 @@ import bs4
 
 def get_state_virus_data():
     request_url_virus = 'https://covidtracking.com/api/v1/states/current.json'
-    request_data = requests.get(request_url_virus)
+    request_data = requests.get(request_url_virus, headers = headers)
     virus_data = json.loads(request_data.text)
     return virus_data
     #not working
@@ -49,12 +49,12 @@ def get_social_data():
 #VISUALIZE DATA: We just need 2 charts
 
 #REPORT
-#Goals:
+#Goals: see if there is a relationship between social media use and the prevelance of COVID-19
 #Problems Faced: Issues with Twitter as an API
 #Include the visualizations (2 charts from earlier)
 #Instructions for running code
 #Explain what each function did, run through each briefly
-#State resources used
+#State resources used: Github obviously, twitter, instagram api websites for example code
 
 conn = sqlite3.connect('finalproject.sqlite')
 cur = conn.cursor()
@@ -87,8 +87,8 @@ def total_virus_table(start_pos,end_pos):
         if(x<=52):
             row = virus_total_cache[x]
             state_name = row['State']
-            state_name = row['Virus']
-            cur.execute('INSERT INTO TOTAL_VIRUSES (state, total) VALUES (?, ?)',(state_name, state_name))
+            virus_name = row['Virus']
+            cur.execute('INSERT INTO TOTAL_VIRUSES (state, total) VALUES (?, ?)',(state_name, virus_name))
             conn.commit()
         else:
             continue
@@ -96,7 +96,16 @@ def total_virus_table(start_pos,end_pos):
     #insert into state and total virus count 
 
 def pos_neg_table(start_pos, end_pos):
-    pass
+    for x in range(start_pos, end_pos):
+        if (x <= 52):
+            row = state_pop_cache[x]
+            state_name = row['State']
+            #IDK what to put virus_result = row['Virus']["Positive"]
+            cur.execute('INSERT INTO TOTAL_VIRUSES (state, total) VALUES (?, ?)',(state_name, virus_result))
+            conn.commit()
+        else:
+            continue
+    #tried starting these
     #insert into table state(pos/neg) and according count
 
 def social_table(start_pos, end_pos):
