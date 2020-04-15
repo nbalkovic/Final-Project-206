@@ -157,9 +157,10 @@ def social_table(start_pos, end_pos):
             state_total = item['positive']
             cur.execute('INSERT INTO TOTAL_SOCIAL (state, total) VALUES (?, ?)',(state_name, state_total))
             conn.commit()
-            if count_1 > 18+total_social:
+            if count_1 > 18 + total_social:
                 break
     #insert into table 100 days and frequency of twitter use 
+    # start_pos, end_pos may be replaced by json_data
 
 
 def commit():
