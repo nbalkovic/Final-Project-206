@@ -13,17 +13,17 @@ import bs4
 def get_state_virus_data():
     request_url_virus = 'https://covidtracking.com/api/v1/states/current.json'
     request_data = requests.get(request_url_virus)
-    virus_data = json.loads(request_data.text)
-    return virus_data
-    #not working
+    return (request_data.json())
 
 
 def get_state_populations():
     request_url_pop = 'https://datausa.io/api/data?drilldowns=State&measures=Population&year=latest'
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36','Content-type': 'text/html', 'Accept-encoding':'Identity', 'upgrade-insecure-requests': '1'}
     population_data = requests.get(request_url_pop, headers = headers)
-    population_list = json.loads(population_data.text)
-    return(population_list)
+    print('population_data',population_data.content.decode())
+    
+    #population_list = json.loads(population_data.text)
+    #return(population_list)
 
 def get_social_data():
     url = ('https://gs.statcounter.com/social-media-stats/all/united-states-of-america/#daily-20200101-20200409')
@@ -65,37 +65,67 @@ cur = conn.cursor()
 
 cur.execute('CREATE TABLE IF NOT EXISTS POPULATIONS (state TEXT, population INTEGER)')
 state_pop = get_state_populations()
-state_pop_cache = state_pop['data']
+#state_pop_cache = state_pop['data']
 
-def population_table(start_pos, end_pos):
-    for x in range(start_pos, end_pos):
-        if (x <= 52):
-            row = state_pop_cache[x]
-            state_name = row['State']
-            state_population = row['Population']
-            cur.execute('INSERT INTO POPULATIONS (state, population) VALUES (?, ?)',(state_name, state_population))
-            conn.commit()
-        else:
-            continue
-    start_pos = end_pos
-    end_pos +=51
-    return start_pos, end_pos
+# def population_table(start_pos, end_pos):
+#     for x in range(start_pos, end_pos):
+#         if (x <= 52):
+#             row = state_pop_cache[x]
+#             state_name = row['State']
+#             state_population = row['Population']
+#             cur.execute('INSERT INTO POPULATIONS (state, population) VALUES (?, ?)',(state_name, state_population))
+#             conn.commit()
+#         else:
+#             continue
+#     start_pos = end_pos
+#     end_pos +=51
+#     return start_pos, end_pos
 
+
+def counter():
+    new_list = []
+    cur.execute("SELECT count(*) FROM TOTAL_VIRUSES")
+    total_virus = cur.fetchone()
+    conn.commit()
+    new_list.append(total_virus)
+    
+    cur.execute("SELECT count(*) FROM POPULATIONS")
+    conn.commit()
+    total_pop = cur.fetchone()
+    new_list.append(total_pop)
+    
+    # cur.execute("SELECT count(*) FROM SOCIAL")
+    # conn.commit()
+    # total_social = cur.fetchone()
+    # new_list.append(total_social)
+    
+    # cur.execute("SELECT count(*) FROM SOCIAL2")
+    # conn.commit()
+    # total_social2 = cur.fetchone()
+    # new_list.append(total_social2)
+
+    return new_list
 cur.execute('CREATE TABLE IF NOT EXISTS TOTAL_VIRUSES (state TEXT, total INTEGER)')
-virus_total = get_state_virus_data()
-#virus_total_cache = virus_total['data2']
+json_data = get_state_virus_data()
 
+def total_virus_table(json_data):
+    total_record = counter()
+    counter_1 = -1
+    total_virus = total_record[0][0]
+    for item in json_data:
+        counter_1+=1
+        if counter_1 < int(total_virus):
+            continue
 
-def total_virus_table(start_pos,end_pos):
-    for x in range(start_pos, end_pos):
-        if(x<=52):
-            #row = virus_total_cache[x]
-            state_name = row['state']
-            state_total = row['total']
+        else:
+            state_name = item['state']
+            state_total = item['positive']
             cur.execute('INSERT INTO TOTAL_VIRUSES (state, total) VALUES (?, ?)',(state_name, state_total))
             conn.commit()
-        else:
-            continue
+        
+            if counter_1 > 18+total_virus:
+                break
+
 
     #insert into state and total virus count 
 
@@ -119,19 +149,15 @@ def social_table(start_pos, end_pos):
     pass
     #insert into table 100 days and frequency of twitter use 
 
-def insert_twenty():
-    start_pos = 0
-    end_pos = 13
-    for i in range(5):
-        population_table(start_pos,end_pos)
-        start_pos+= 13
-        end_pos+= 13
 
 def commit():
     conn.commit()
 
 def main():
     commit()
+    counter()
+    json_data = get_state_virus_data()
+    total_virus_table(json_data)
 
 if __name__ == "__main__":
     main()
