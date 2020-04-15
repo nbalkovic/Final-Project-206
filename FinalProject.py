@@ -49,7 +49,7 @@ def get_world_info():
 
 #VISUALIZE DATA: We just need 2 charts
 
-#REPORT
+#REPORT: just need to insert code and visualizations. Mostly finished with every other aspect.
 #Goals: see if there is a relationship between social media use and the prevelance of COVID-19
 #Problems Faced: Issues with Twitter as an API
 #Include the visualizations (2 charts from earlier)
@@ -152,8 +152,21 @@ def total_virus_table(json_data):
 #     #insert into table state(pos/neg) and according count
 
 def social_table(start_pos, end_pos):
-    pass
+    total_social = counter()
+    count_1 = -1
+    for x in range(start_pos, end_pos):
+        count_1 += 1
+        if count_1 < int(total_social):
+            continue
+        else:
+            state_name = item['state']
+            state_total = item['positive']
+            cur.execute('INSERT INTO TOTAL_SOCIAL (state, total) VALUES (?, ?)',(state_name, state_total))
+            conn.commit()
+            if count_1 > 18 + total_social:
+                break
     #insert into table 100 days and frequency of twitter use 
+    # start_pos, end_pos may be replaced by json_data
 
 
 def commit():
