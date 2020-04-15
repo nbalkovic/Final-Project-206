@@ -52,7 +52,7 @@ print(get_world_info)
 
 #VISUALIZE DATA: We just need 2 charts
 
-#REPORT: just need to insert code and visualizations
+#REPORT: just need to insert code and visualizations. Mostly finished with every other aspect.
 #Goals: see if there is a relationship between social media use and the prevelance of COVID-19
 #Problems Faced: Issues with Twitter as an API
 #Include the visualizations (2 charts from earlier)
