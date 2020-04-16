@@ -23,21 +23,21 @@ def get_state_populations():
     population_data = json.loads(pop_data)    
     return(population_data)
     
-# def get_social_data():
-#     url = ('https://gs.statcounter.com/social-media-stats/all/united-states-of-america/#daily-20200101-20200409')
-#     titles = {'user-agent':'This is user agent'}
-#     x = requests.get(url, headers = titles)
-#     soup = bs4.BeautifulSoup(x.text, features='lxml')
+def get_social_data():
+    url = ('https://gs.statcounter.com/social-media-stats/all/united-states-of-america/#daily-20200101-20200409')
+    titles = {'user-agent':'This is user agent'}
+    x = requests.get(url, headers = titles)
+    soup = bs4.BeautifulSoup(x.text, features='lxml')
     
-#     all_urls = soup
-#     new_urls = all_urls.find(class_ = 'raphael-group-11-hot')
-#     return(new_urls)
+    all_urls = soup
+    new_urls = all_urls.find(class_ = 'raphael-group-11-hot')
+    return(new_urls)
 
 def get_daily_virus():
     request_url_virus_pos = 'https://covidtracking.com/api/us/daily'
     request_data_pos = requests.get(request_url_virus_pos)
     return (request_data_pos.json())
-
+#0528NATJUS
 
 def get_world_info():
     world_url = 'https://api.thevirustracker.com/free-api?countryTotals=ALL'
@@ -161,20 +161,21 @@ world_data = world_stuff["countryitems"]
 def world_table(world_data):
     total_world_record = counter()
     counter_1 = -1
-    total_world = total_world_record[2][0]
-    for item in json_data:
-        counter_1+=1
-        if counter_1 < int(total_world):
-            continue
+    total_world = total_world_record[3][0]
+    for item in world_data:
+        for x in item.values():
+            counter_1+=1
+            if counter_1 < int(total_world):
+                continue
 
-        else:
-            country_name = item['title']
-            country_total = item['total_cases']
-            cur.execute('INSERT INTO WORLD (country, total) VALUES (?, ?)',(country_name, country_total))
-            conn.commit()
-            
-            if counter_1 > 18+total_world:
-                break
+            else:
+                country_name = x['title']
+                country_total = x['total_cases']
+                cur.execute('INSERT INTO WORLD (country, total) VALUES (?, ?)',(country_name, country_total))
+                conn.commit()
+                
+                if counter_1 > 18+total_world:
+                    break
 
 cur.execute('CREATE TABLE IF NOT EXISTS TOTAL_DAILY (date INTEGER, positive INTEGER)')
 daily_data = get_daily_virus()
@@ -182,7 +183,7 @@ daily_data = get_daily_virus()
 def total_daily_table(daily_data):
     total_record = counter()
     counter_1 = -1
-    total_daily = total_record[3][0]
+    total_daily = total_record[4][0]
     for item in daily_data:
         counter_1+=1
         if counter_1 < int(total_daily):
@@ -234,7 +235,7 @@ def virus_dictionary():
         else:
             pass
     conn.commit()
-    return virus_dictionary
+    return dict(virus_dictionary)
 
 
 def visual_state_virus(virus_dictionary):
@@ -278,10 +279,13 @@ def main():
 
     daily_data = get_daily_virus()
     total_daily_table(daily_data)
+
     
     calculations(cur, conn, 'Calculations.txt')
 
-    visual_state_virus(virus_dictionary())
+    world_stuff = get_world_info()
+    world_data = world_stuff["countryitems"]
+    world_table(world_data)
 
     commit()
 
