@@ -7,6 +7,7 @@ import os
 import numpy as np 
 from bs4 import BeautifulSoup
 import bs4
+import pandas as pd
 
 #GET DATA
 
@@ -24,20 +25,14 @@ def get_state_populations():
     return(population_data)
     
 def get_social_data():
-    url = ('https://gs.statcounter.com/social-media-stats/all/united-states-of-america/#daily-20200101-20200409')
-    titles = {'user-agent':'This is user agent'}
-    x = requests.get(url, headers = titles)
-    soup = bs4.BeautifulSoup(x.text, features='lxml')
-    
-    all_urls = soup
-    new_urls = all_urls.find(class_ = 'raphael-group-11-hot')
-    return(new_urls)
+#https://gs.statcounter.com/social-media-stats/all/united-states-of-america/#daily-20200101-20200409
+    df = pd.read_csv('socialmediadata.csv') 
+    return df
 
 def get_daily_virus():
     request_url_virus_pos = 'https://covidtracking.com/api/us/daily'
     request_data_pos = requests.get(request_url_virus_pos)
     return (request_data_pos.json())
-#0528NATJUS
 
 def get_world_info():
     world_url = 'https://api.thevirustracker.com/free-api?countryTotals=ALL'
@@ -135,24 +130,26 @@ def population_table(state_data):
                 break
 
 
-cur.execute('CREATE TABLE IF NOT EXISTS SOCIAL (state TEXT, total INTEGER)')
+cur.execute('CREATE TABLE IF NOT EXISTS SOCIAL (date TEXT, twitter INTEGER)')
 
-def social_table(start_pos, end_pos):
-    total_social = counter()
+social_data =  get_social_data()
+
+def social_table(social_data):
+    total_social_count = counter()
     count_1 = -1
-    for x in range(start_pos, end_pos):
+    total_social = total_social_count[2][0]
+
+    for x in range(0, len(social_data.index)):
         count_1 += 1
         if count_1 < int(total_social):
             continue
         else:
-            state_name = item['state']
-            state_total = item['positive']
-            cur.execute('INSERT INTO TOTAL_SOCIAL (state, total) VALUES (?, ?)',(state_name, state_total))
+            date = social_data.at[x, "Date"]
+            twitter = social_data.at[x, "Twitter"]
+            cur.execute('INSERT INTO SOCIAL (date, twitter) VALUES (?, ?)',(date, twitter))
             conn.commit()
             if count_1 > 18 + total_social:
                 break
-    #insert into table 100 days and frequency of twitter use 
-    # start_pos, end_pos may be replaced by json_data
 
 cur.execute('CREATE TABLE IF NOT EXISTS WORLD (country TEXT, total INTEGER)')
 world_stuff = get_world_info()
@@ -177,7 +174,7 @@ def world_table(world_data):
                 if counter_1 > 18+total_world:
                     break
 
-cur.execute('CREATE TABLE IF NOT EXISTS TOTAL_DAILY (date INTEGER, positive INTEGER)')
+cur.execute('CREATE TABLE IF NOT EXISTS TOTAL_DAILY (date TEXT, positive INTEGER)')
 daily_data = get_daily_virus()
 
 def total_daily_table(daily_data):
@@ -197,6 +194,14 @@ def total_daily_table(daily_data):
         
             if counter_1 > 18+total_daily:
                 break
+
+def join_table():
+
+    cur.execute("SELECT t.date, positive FROM TOTAL_DAILY as t INNER JOIN SOCIAL ON datetime(substr(t.date,1, 4)||'-'||substr(t.date,5,2)||'-'||substr(t.date,7,2))  = datatime(SOCIAL.date)")
+
+    #cur.execute("SELECT t.date, positive FROM TOTAL_DAILY as t INNER JOIN SOCIAL ON t.date = SOCIAL.date")
+    data = cur.fetchall()
+    print(data)
 
 
 def calculations(cur, conn, filename):
@@ -228,8 +233,8 @@ def virus_dictionary():
     virus_dictionary = {}
     cur = conn.cursor()
     cur.execute("SELECT state, total FROM TOTAL_VIRUSES ")
-    all_ = cur.fetchall()
-    for x in all_:
+    data = cur.fetchall()
+    for x in data:
         if x[0] not in virus_dictionary:
             virus_dictionary[x[0]] = x[1]
         else:
@@ -257,9 +262,76 @@ def visual_state_virus(virus_dictionary):
     plt.show()
     return sorted_final_list
 
+def daily_dictionary():
+    try:
+        conn = sqlite3.connect('finalproject.sqlite')
+    except:
+        print("Error")
+    daily_dictionary = {}
+    cur = conn.cursor()
+    cur.execute("SELECT date, positive FROM TOTAL_DAILY ")
+    data = cur.fetchall()
+    for x in data:
+        if x[0] not in daily_dictionary:
+            daily_dictionary[x[0]] = x[1]
+        else:
+            pass
+    conn.commit()
+    return (dict(daily_dictionary))
 
-def visualize_past_50():
-    pass
+def social_dictionary():
+    try:
+        conn = sqlite3.connect('finalproject.sqlite')
+    except:
+        print("Error")
+    social_dictionary = {}
+    cur = conn.cursor()
+    cur.execute("SELECT date, twitter FROM SOCIAL")
+    data = cur.fetchall()
+    for x in data:
+        if x[0] not in social_dictionary:
+            social_dictionary[x[0]] = x[1]
+        else:
+            pass
+    conn.commit()
+    return dict(social_dictionary)
+
+
+def visualize_past_50(social_dictionary, daily_dictionary):
+    
+    new = []
+    for x in social_dictionary.keys():
+        new.append(tuple([x,social_dictionary[x]]))
+    sorted_new = sorted(new, key = lambda x: x[0])
+    date = []
+    twitter = []
+    for x in sorted_new:
+        date.append(x[0])
+        twitter.append(x[1])
+
+    new2 = []
+    for x_ in daily_dictionary.keys():
+        new2.append(tuple([x_,daily_dictionary[x_]]))
+    sorted_new2 = sorted(new2, key = lambda x_: x_[0])
+    date_virus = []
+    positive = []
+    for x_ in sorted_new2:
+        date_virus.append(x_[0])
+        positive.append(x_[1])
+    
+
+    plt.subplot(2,1,1)
+    plt.plot(date, twitter, 'o-')
+    plt.title('Comparing trendlines')
+    plt.ylabel('Twitter')
+
+    plt.subplot(2, 1, 2)
+    plt.plot(date_virus, positive, '.-')
+    plt.xlabel('Date')
+    plt.ylabel('Virus')    
+    
+    plt.show()
+
 
 
 def commit():
@@ -275,18 +347,22 @@ def main():
     state_data = state_pop["data"]
     population_table(state_data)
 
-    get_world_info()
-
-    daily_data = get_daily_virus()
-    total_daily_table(daily_data)
-
-    
-    calculations(cur, conn, 'Calculations.txt')
-
     world_stuff = get_world_info()
     world_data = world_stuff["countryitems"]
     world_table(world_data)
 
+    daily_data = get_daily_virus()
+    total_daily_table(daily_data)
+
+    social_data =  get_social_data()
+    social_table(social_data)
+
+    
+    calculations(cur, conn, 'Calculations.txt')
+
+    #visual_state_virus(virus_dictionary())
+    visualize_past_50(social_dictionary(), daily_dictionary())
+    join_table()
     commit()
 
 
