@@ -1,0 +1,2 @@
+Calculations
+First, we calculated the amount of positive cases per 100,000 for the United States. To do this, we added the total cases from each state and divided that by the total population of all states. Then we multiplied that total by 100,000: 247.68036015791833
