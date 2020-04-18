@@ -188,6 +188,7 @@ def total_daily_table(daily_data):
 
         else:
             date = item['date']
+
             positive = item['positive']
             cur.execute('INSERT INTO TOTAL_DAILY (date, positive) VALUES (?, ?)',(date, positive))
             conn.commit()
@@ -195,13 +196,12 @@ def total_daily_table(daily_data):
             if counter_1 > 18+total_daily:
                 break
 
+cur.execute('CREATE TABLE IF NOT EXISTS JOIN_TABLE (date TEXT, positive INTEGER, twitter INTEGER)')
 def join_table():
 
-    cur.execute("SELECT t.date, positive FROM TOTAL_DAILY as t INNER JOIN SOCIAL ON datetime(substr(t.date,1, 4)||'-'||substr(t.date,5,2)||'-'||substr(t.date,7,2))  = datatime(SOCIAL.date)")
-
-    #cur.execute("SELECT t.date, positive FROM TOTAL_DAILY as t INNER JOIN SOCIAL ON t.date = SOCIAL.date")
-    data = cur.fetchall()
-    print(data)
+    #cur.execute("SELECT t.date, t.positive, s.twitter FROM TOTAL_DAILY as t INNER JOIN SOCIAL as s ON ((substr(s.date,1,4)||substr(s.date,6,2)||substr(s.date,9,2))=t.date)")
+    cur.execute("INSERT INTO JOIN_TABLE SELECT t.date, t.positive, s.twitter FROM TOTAL_DAILY as t INNER JOIN SOCIAL as s ON ((substr(s.date,1,4)||substr(s.date,6,2)||substr(s.date,9,2))=t.date)")
+    conn.commit()
 
 
 def calculations(cur, conn, filename):
@@ -269,7 +269,7 @@ def daily_dictionary():
         print("Error")
     daily_dictionary = {}
     cur = conn.cursor()
-    cur.execute("SELECT date, positive FROM TOTAL_DAILY ")
+    cur.execute("SELECT date, positive FROM JOIN_TABLE")
     data = cur.fetchall()
     for x in data:
         if x[0] not in daily_dictionary:
@@ -286,7 +286,7 @@ def social_dictionary():
         print("Error")
     social_dictionary = {}
     cur = conn.cursor()
-    cur.execute("SELECT date, twitter FROM SOCIAL")
+    cur.execute("SELECT date, twitter FROM JOIN_TABLE")
     data = cur.fetchall()
     for x in data:
         if x[0] not in social_dictionary:
@@ -324,11 +324,15 @@ def visualize_past_50(social_dictionary, daily_dictionary):
     plt.plot(date, twitter, 'o-')
     plt.title('Comparing trendlines')
     plt.ylabel('Twitter')
+    plt.xticks(fontsize=4, rotation = 90)
 
     plt.subplot(2, 1, 2)
     plt.plot(date_virus, positive, '.-')
     plt.xlabel('Date')
-    plt.ylabel('Virus')    
+    plt.ylabel('Virus')  
+    plt.xticks(fontsize=4, rotation = 90)
+
+
     
     plt.show()
 
