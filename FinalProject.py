@@ -9,8 +9,6 @@ from bs4 import BeautifulSoup
 import bs4
 import pandas as pd
 
-#GET DATA
-
 def get_state_virus_data():
     request_url_virus = 'https://covidtracking.com/api/v1/states/current.json'
     request_data = requests.get(request_url_virus)
@@ -25,7 +23,7 @@ def get_state_populations():
     return(population_data)
     
 def get_social_data():
-#https://gs.statcounter.com/social-media-stats/all/united-states-of-america/#daily-20200101-20200409
+    #request_url_social = 'https://gs.statcounter.com/social-media-stats/all/united-states-of-america/#daily-20200101-20200409'
     df = pd.read_csv('socialmediadata.csv') 
     return df
 
@@ -39,21 +37,8 @@ def get_world_info():
     world_req = requests.get(world_url)
     return(world_req.json())
 
-
-#calculates number of cases per state population (cases per capita)
-
-#VISUALIZE DATA: We just need 2 charts
-
-#REPORT: just need to insert code and visualizations. Mostly finished with every other aspect.
-#Goals: see if there is a relationship between social media use and the prevelance of COVID-19
-#Problems Faced: Issues with Twitter as an API
-#Include the visualizations (2 charts from earlier)
-#Instructions for running code
-#Explain what each function did, run through each briefly
-#State resources used: Github obviously, twitter, instagram api websites for example code
 conn = sqlite3.connect('finalproject.sqlite')
 cur = conn.cursor()
-
 
 def counter():
     new_list = []
@@ -82,7 +67,6 @@ def counter():
     conn.commit()
     total_daily = cur.fetchone()
     new_list.append(total_daily)
-
 
     return new_list
 
@@ -364,7 +348,7 @@ def main():
     
     calculations(cur, conn, 'Calculations.txt')
 
-    #visual_state_virus(virus_dictionary())
+    visual_state_virus(virus_dictionary())
     visualize_past_50(social_dictionary(), daily_dictionary())
     join_table()
     commit()
