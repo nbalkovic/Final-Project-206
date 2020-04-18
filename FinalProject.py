@@ -9,8 +9,6 @@ from bs4 import BeautifulSoup
 import bs4
 import pandas as pd
 
-#GET DATA
-
 def get_state_virus_data():
     request_url_virus = 'https://covidtracking.com/api/v1/states/current.json'
     request_data = requests.get(request_url_virus)
@@ -42,7 +40,6 @@ def get_world_info():
 conn = sqlite3.connect('finalproject.sqlite')
 cur = conn.cursor()
 
-
 def counter():
     new_list = []
    
@@ -70,7 +67,6 @@ def counter():
     conn.commit()
     total_daily = cur.fetchone()
     new_list.append(total_daily)
-
 
     return new_list
 
